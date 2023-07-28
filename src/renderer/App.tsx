@@ -1,14 +1,25 @@
 import { CssBaseline } from '@mui/material';
-import { Link, Route, MemoryRouter as Router, Routes } from 'react-router-dom';
+import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
+
 import Teste from './teste';
 
 function Home() {
+  const testeSql = () => {
+    window.electron.ipcRenderer.sendMessage('testeSql');
+  };
   return (
     <div>
       <h1>Home</h1>
-      <Link to="/teste">
-        <button type="button">Teste</button>
-      </Link>
+
+      <button
+        onClick={() => {
+          console.log('clicou');
+          testeSql();
+        }}
+        type="button"
+      >
+        Teste
+      </button>
     </div>
   );
 }
