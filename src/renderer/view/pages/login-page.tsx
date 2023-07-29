@@ -5,19 +5,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 
-interface ILoginProps {
+export interface ILoginProps {
   username: string;
   password: string;
   server: string;
   database: string;
 }
-
-const initialValues = {
-  username: '',
-  password: '',
-  server: '',
-  database: '',
-};
 
 const userSchema = yup.object().shape({
   username: yup.string().required('Obrigatorio'),
@@ -27,14 +20,28 @@ const userSchema = yup.object().shape({
 });
 
 export default function LoginPage() {
+  const initialValues = {
+    username: '',
+    password: '',
+    server: '',
+    database: '',
+  };
+
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFormSubmit = async (values: ILoginProps) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log(values);
-    navigate('/home');
+    window.electron.ipcRenderer.sendMessage('cronosSQL', values);
+    await window.electron.ipcRenderer.once('cronosSQL', (arg) => {
+      console.log(arg);
+      if ((arg as string) === 'OK') {
+        navigate('/home');
+      } else {
+        alert('Usuario e senha inválidos');
+      }
+    });
+    setIsLoading(false);
   };
   return (
     <Box

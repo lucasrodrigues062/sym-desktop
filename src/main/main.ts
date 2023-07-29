@@ -12,9 +12,11 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { ILoginProps } from 'renderer/view/pages/login-page';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import init from '../../release/app/mssql/connection';
+import CronosService from '../../release/app/mssql/connection';
+import { checkUserPwd } from '../../release/app/mssql/queries';
 
 class AppUpdater {
   constructor() {
@@ -24,6 +26,8 @@ class AppUpdater {
   }
 }
 
+let cronosPool = null;
+
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
@@ -32,11 +36,20 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
-ipcMain.on('testeSql', async (event, arg) => {
-  console.log('recebi evento');
-  const result = await init();
-  console.log(result.recordset[0]);
-  event.reply('testeSql', result);
+ipcMain.on('cronosSQL', async (event, arg) => {
+  const user = arg as ILoginProps;
+  cronosPool = await new CronosService().pool(user.database, user.server);
+  const result = await cronosPool
+    .request()
+    .input('username', user.username)
+    .input('pwd', user.password)
+    .query(checkUserPwd);
+  const { same } = result.recordset[0];
+  if (same) {
+    event.reply('cronosSQL', 'OK');
+  } else {
+    event.reply('cronosSQL', 'KO');
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {
