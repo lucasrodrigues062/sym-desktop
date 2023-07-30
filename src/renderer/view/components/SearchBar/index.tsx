@@ -46,7 +46,6 @@ export default function SearchBar({ setPedidos }: SearchBarProps) {
   });
 
   window.electron.ipcRenderer.once('buscaPedidoPalm', (arg) => {
-    console.log(arg);
     setPedidos(arg as PedidoPalm[]);
     setIsLoading(false);
   });

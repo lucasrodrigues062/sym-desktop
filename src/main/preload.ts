@@ -8,6 +8,7 @@ export type Channels =
   | 'cronosLogin'
   | 'buscaFilial'
   | 'buscaOl'
+  | 'buscaItemPedidoPalm'
   | 'buscaPedidoPalm';
 
 const electronHandler = {

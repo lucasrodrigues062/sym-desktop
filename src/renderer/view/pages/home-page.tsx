@@ -7,7 +7,7 @@ import PedidoPalmTableProps from '../components/PedidoPalmGrid';
 import PedidoPalmTable from '../components/PedidoPalmGrid';
 
 function Home() {
-  const [pedidos, setPedidos] = useState<PedidoPalm>([]);
+  const [pedidos, setPedidos] = useState<PedidoPalm[]>([]);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 

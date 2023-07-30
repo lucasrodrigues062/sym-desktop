@@ -1,7 +1,10 @@
 import { Box, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { PedidoPalm } from 'main/channels/buscaPedidoPalm';
+import { ItemPedidopalm, PedidoPalm } from 'main/channels/buscaPedidoPalm';
 import { tokens } from 'renderer/styles/theme';
+
+import { useEffect, useState } from 'react';
+import ItemPedidoModal from './ItemPedidoPalmModal';
 
 interface PedidoPalmTableProps {
   pedidos: PedidoPalm[];
@@ -10,6 +13,22 @@ interface PedidoPalmTableProps {
 export default function PedidoPalmTable({ pedidos }: PedidoPalmTableProps) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [open, setOpen] = useState(false);
+  const [selectedPedido, setSelectedPedido] = useState<PedidoPalm | null>(null);
+  const [itemsPedido, setItemsPedido] = useState<ItemPedidopalm[]>([]);
+
+  useEffect(() => {
+    if (selectedPedido !== null) {
+      window.electron.ipcRenderer.sendMessage(
+        'buscaItemPedidoPalm',
+        selectedPedido?.IdPedidoPalm
+      );
+    }
+  }, [selectedPedido]);
+
+  window.electron.ipcRenderer.once('buscaItemPedidoPalm', (arg) => {
+    setItemsPedido(arg as ItemPedidopalm[]);
+  });
 
   const columns: GridColDef[] = [
     { field: 'IdPedidoPalm', headerName: 'IdPedido' },
@@ -132,10 +151,12 @@ export default function PedidoPalmTable({ pedidos }: PedidoPalmTableProps) {
         columns={columns}
         disableRowSelectionOnClick
         onRowDoubleClick={(e) => {
-          console.log(e.row);
+          setSelectedPedido(e.row);
+          setOpen(true);
         }}
         components={{ Toolbar: GridToolbar }}
       />
+      <ItemPedidoModal open={open} handleOpen={setOpen} rows={itemsPedido} />
     </Box>
   );
 }

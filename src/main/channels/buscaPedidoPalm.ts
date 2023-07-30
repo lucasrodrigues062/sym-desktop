@@ -21,6 +21,23 @@ AND (Pedidopalm.Origem = @origem)
 
 ORDER BY Pedidopalm.IdPedidoPalm`;
 
+const queryItemPedidoPalm = `SELECT Itempedidopalm.IdItempedidopalm, Itempedidopalm.IdPedidoPalm, p.NOMEPRODUTO, ClassePIS.CodClassePIS, Itempedidopalm.Item, Itempedidopalm.CodProduto, Itempedidopalm.IdProduto, Itempedidopalm.Qtd, Itempedidopalm.QtdConfirmada, Itempedidopalm.IdPrecoTabela, Itempedidopalm.PercDescontoItem, Itempedidopalm.PrecoUnit, Itempedidopalm.SituacaoItemPedido, CodRetornoItem, DscRetornoItem,
+CODEAN=Itempedidopalm.CodProdutoArq,
+DADOS_IM.*
+FROM Itempedidopalm CROSS APPLY (SELECT
+QtdIMGerado = MAX(im.Qtd), PUnitIMGerado = MAX(im.PrecoUnit), PercDescItemIMGerado = MAX(im.PercDescontoItem), UnidItemMov = MAX(im.UnidItemMov),  ItemLoteSerie=max(dbo.fn_DscItemLoteSerie(im.IdItemMov)), IdItemMovGerado  = MAX(im.IdItemMov),   PercICMS=MAX(im.PercICMS), PercIPI=MAX(im.PercIPI), CFOP = MAX(NatOP.CFPO), SitTributariaItem=MAX(im.SitTributariaItem),
+ValorItemICMS = CONVERT(NUMERIC(12,2) , MAX( dbo.fn_ValorItemMov4('VI', im.IdMov, im.IdItemMov, im.IdProduto, im.PrecoUnit, im.PercDescontoItem, im.Qtd, im.PercICMS, im.PercIPI, im.PercISS, im.MVAitem, TipoMov, Movimento.CodCliFor, Movimento.CodFilial, CodFilialDest, CodLocalDest, Movimento.PercDesconto, CalculaICMSsubstituto,  DescNaoIncideICMS, im.IdNaturezaOperacao, SitTributariaItem,ValorIPIincideICMS,ValorFreteincideICMS,PercReducaoBICMS,PercSubICMS, ValorItemFrete, ValorItemOutDespesas ))),
+BaseItemICMS = CONVERT(NUMERIC(12,2) ,  MAX( dbo.fn_ValorItemMov4('BI', im.IdMov, im.IdItemMov, im.IdProduto, im.PrecoUnit, im.PercDescontoItem, im.Qtd, im.PercICMS, im.PercIPI, im.PercISS, im.MVAitem, TipoMov, Movimento.CodCliFor, Movimento.CodFilial, CodFilialDest, CodLocalDest, Movimento.PercDesconto,CalculaICMSsubstituto,  DescNaoIncideICMS, im.IdNaturezaOperacao, SitTributariaItem,ValorIPIincideICMS,ValorFreteincideICMS,PercReducaoBICMS,PercSubICMS, ValorItemFrete, ValorItemOutDespesas ))),
+ValorItemSubICMS = CONVERT(NUMERIC(12,2) , MAX( dbo.fn_ValorItemMov4('VIS', im.IdMov, im.IdItemMov, im.IdProduto, im.PrecoUnit, im.PercDescontoItem, im.Qtd, im.PercICMS, im.PercIPI, im.PercISS, im.MVAitem, TipoMov, Movimento.CodCliFor, Movimento.CodFilial, CodFilialDest, CodLocalDest, Movimento.PercDesconto, CalculaICMSsubstituto,  DescNaoIncideICMS, im.IdNaturezaOperacao, SitTributariaItem,ValorIPIincideICMS,ValorFreteincideICMS,PercReducaoBICMS,PercSubICMS, ValorItemFrete, ValorItemOutDespesas ))),
+BaseItemSubICMS = CONVERT(NUMERIC(12,2) ,  MAX( dbo.fn_ValorItemMov4('BIS', im.IdMov, im.IdItemMov, im.IdProduto, im.PrecoUnit, im.PercDescontoItem, im.Qtd, im.PercICMS, im.PercIPI, im.PercISS, im.MVAitem, TipoMov, Movimento.CodCliFor, Movimento.CodFilial, CodFilialDest, CodLocalDest, Movimento.PercDesconto, CalculaICMSsubstituto,  DescNaoIncideICMS, im.IdNaturezaOperacao, SitTributariaItem,ValorIPIincideICMS,ValorFreteincideICMS,PercReducaoBICMS,PercSubICMS, ValorItemFrete, ValorItemOutDespesas ))),
+ValorItemIPI = CONVERT(NUMERIC(12,2) ,  MAX( dbo.fn_ValorItemMov4('VIP', im.IdMov, im.IdItemMov, im.IdProduto, im.PrecoUnit, im.PercDescontoItem, im.Qtd, im.PercICMS, im.PercIPI, im.PercISS, im.MVAitem, TipoMov, Movimento.CodCliFor, Movimento.CodFilial, CodFilialDest, CodLocalDest, Movimento.PercDesconto, CalculaICMSsubstituto,  DescNaoIncideICMS, im.IdNaturezaOperacao, SitTributariaItem,ValorIPIincideICMS,ValorFreteincideICMS,PercReducaoBICMS,PercSubICMS, ValorItemFrete, ValorItemOutDespesas )))
+ FROM ItensMov im, NaturezaOperacao NatOP, PedidoPalm, Movimento  WHERE Itempedidopalm.IdPedidoPalm = PedidoPalm.IdPedidoPalm AND im.IdMov = Movimento.IdMov AND PedidoPalm.IdPedidoPalm = Movimento.IdPedidoPalm AND im.IdProduto = Itempedidopalm.IdProduto AND im.IdNaturezaOperacao = NatOP.IdNaturezaOperacao) AS DADOS_IM
+ LEFT JOIN Produtos P ON ( Itempedidopalm.IdProduto = P.IdProduto) LEFT JOIN ClassePIS ON (P.IdClassePIS = ClassePIS.IdClassePIS)
+
+WHERE (Itempedidopalm.IdPedidoPalm = @idpedido)
+ORDER BY ItemPedidopalm.Item
+`;
+
 interface IBuscaPedidoPalm {
   codfilial: string;
   origem: string;
@@ -54,8 +71,65 @@ export default function buscaOl() {
       event.reply('buscaPedidoPalm', 'KO');
     }
   });
+
+  ipcMain.on('buscaItemPedidoPalm', async (event, arg) => {
+    const dados = arg as number;
+    const cookies = await session.defaultSession.cookies.get({
+      name: 'user',
+    });
+
+    const user = JSON.parse(cookies[0].value) as ILoginProps;
+    const cronosPool = await new CronosService().pool(
+      user.database,
+      user.server
+    );
+    const result = await cronosPool
+      .request()
+
+      .input('idpedido', dados)
+      .query(queryItemPedidoPalm);
+
+    if (result.recordset.length > 0) {
+      event.reply('buscaItemPedidoPalm', result.recordset);
+    } else {
+      event.reply('buscaItemPedidoPalm', 'KO');
+    }
+  });
 }
 
+export interface ItemPedidopalm {
+  IdItempedidopalm: number;
+  IdPedidoPalm: number;
+  NOMEPRODUTO: string;
+
+  Item: number;
+  CodProduto: string;
+  IdProduto: number;
+  Qtd: number;
+  QtdConfirmada: number;
+  IdPrecoTabela: string;
+  PercDescontoItem: number;
+  PrecoUnit: number;
+  SituacaoItemPedido: string;
+  CodRetornoItem: string;
+  DscRetornoItem: string;
+  CODEAN: string;
+  QtdIMGerado: number;
+  PUnitIMGerado: number;
+  PercDescItemIMGerado: number;
+  UnidItemMov: string;
+  ItemLoteSerie: string;
+  IdItemMovGerado: number;
+  PercICMS: number;
+  PercIPI: number;
+  CFOP: string;
+  SitTributariaItem: string;
+  ValorItemICMS: number;
+  BaseItemICMS: number;
+  ValorItemSubICMS: number;
+  BaseItemSubICMS: number;
+  ValorItemIPI: number;
+}
 export interface PedidoPalm {
   IdPedidoPalm: number;
   CodFilial: string;
