@@ -1,7 +1,13 @@
 import { Box, useTheme } from '@mui/material';
+import { PedidoPalm } from 'main/channels/buscaPedidoPalm';
+import { useState } from 'react';
 import { tokens } from 'renderer/styles/theme';
+import SearchBar from '../components/SearchBar';
+import PedidoPalmTableProps from '../components/PedidoPalmGrid';
+import PedidoPalmTable from '../components/PedidoPalmGrid';
 
 function Home() {
+  const [pedidos, setPedidos] = useState<PedidoPalm>([]);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -19,12 +25,16 @@ function Home() {
           gridColumn="span 12"
           gridRow="span 1"
           sx={{ backgroundColor: colors.primary[400] }}
-        />
+        >
+          <SearchBar setPedidos={setPedidos} />
+        </Box>
         <Box
           gridColumn="span 12"
           gridRow="span 3"
           sx={{ backgroundColor: colors.primary[400] }}
-        />
+        >
+          <PedidoPalmTable pedidos={pedidos} />
+        </Box>
         <Box
           gridColumn="span 12"
           gridRow="span 3"

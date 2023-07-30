@@ -32,17 +32,18 @@ export default function LoginPage() {
 
   const handleFormSubmit = async (values: ILoginProps) => {
     setIsLoading(true);
-    window.electron.ipcRenderer.sendMessage('cronosSQL', values);
-    await window.electron.ipcRenderer.once('cronosSQL', (arg) => {
-      console.log(arg);
-      if ((arg as string) === 'OK') {
-        navigate('/home');
-      } else {
-        alert('Usuario e senha inválidos');
-      }
-    });
-    setIsLoading(false);
+    localStorage.setItem('user', JSON.stringify(values));
+    window.electron.ipcRenderer.sendMessage('cronosLogin', values);
   };
+
+  window.electron.ipcRenderer.once('cronosLogin', (arg) => {
+    setIsLoading(false);
+    if ((arg as string) === 'OK') {
+      navigate('/home');
+    } else {
+      alert('Usuario e senha inválidos');
+    }
+  });
   return (
     <Box
       width="100vw"

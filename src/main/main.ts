@@ -8,15 +8,17 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
-import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
-import { autoUpdater } from 'electron-updater';
+import { BrowserWindow, app, shell } from 'electron';
 import log from 'electron-log';
-import { ILoginProps } from 'renderer/view/pages/login-page';
+import { autoUpdater } from 'electron-updater';
+import path from 'path';
+import ipcTeste from './ipc';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import CronosService from '../../release/app/mssql/connection';
-import { checkUserPwd } from '../../release/app/mssql/queries';
+import cronosLogin from './channels/cronosLogin';
+import buscaFilial from './channels/buscaFilial';
+import buscaOl from './channels/buscaOL';
+import buscaPedidoPalm from './channels/buscaPedidoPalm';
 
 class AppUpdater {
   constructor() {
@@ -26,31 +28,13 @@ class AppUpdater {
   }
 }
 
-let cronosPool = null;
-
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
-
-ipcMain.on('cronosSQL', async (event, arg) => {
-  const user = arg as ILoginProps;
-  cronosPool = await new CronosService().pool(user.database, user.server);
-  const result = await cronosPool
-    .request()
-    .input('username', user.username)
-    .input('pwd', user.password)
-    .query(checkUserPwd);
-  const { same } = result.recordset[0];
-  if (same) {
-    event.reply('cronosSQL', 'OK');
-  } else {
-    event.reply('cronosSQL', 'KO');
-  }
-});
+ipcTeste();
+cronosLogin();
+buscaFilial();
+buscaOl();
+buscaPedidoPalm();
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
