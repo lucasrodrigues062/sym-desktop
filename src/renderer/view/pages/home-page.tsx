@@ -16,9 +16,10 @@ function Home() {
       <Box display="flex" justifyContent="space-between" alignItems="center" />
 
       <Box
-        display="grid"
-        gridTemplateColumns="repeat(12, 1fr)"
-        gridAutoRows="80px"
+        display="flex"
+        flexDirection="column"
+        // gridTemplateColumns="repeat(12, 1fr)"
+        // gridAutoRows="80px"
         gap="15px"
       >
         <Box
@@ -29,17 +30,12 @@ function Home() {
           <SearchBar setPedidos={setPedidos} />
         </Box>
         <Box
-          gridColumn="span 12"
-          gridRow="span 3"
+          // gridColumn="span 12"
+          // gridRow="span 3"
           sx={{ backgroundColor: colors.primary[400] }}
         >
           <PedidoPalmTable pedidos={pedidos} />
         </Box>
-        <Box
-          gridColumn="span 12"
-          gridRow="span 3"
-          sx={{ backgroundColor: colors.primary[400] }}
-        />
       </Box>
     </Box>
   );

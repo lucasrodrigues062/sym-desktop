@@ -12,85 +12,130 @@ export default function PedidoPalmTable({ pedidos }: PedidoPalmTableProps) {
   const colors = tokens(theme.palette.mode);
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', flex: 0.5 },
-    { field: 'registrarId', headerName: 'Registrar ID' },
+    { field: 'IdPedidoPalm', headerName: 'IdPedido' },
+    { field: 'CodFilial', headerName: 'Cod. Filial' },
     {
-      field: 'name',
-      headerName: 'Name',
-      flex: 1,
+      field: 'Origem',
+      headerName: 'Origem',
       cellClassName: 'name-column--cell',
     },
     {
-      field: 'age',
-      headerName: 'Age',
+      field: 'NumPedidoPalm',
+      headerName: 'Num. Pedido',
       type: 'number',
       headerAlign: 'left',
       align: 'left',
     },
     {
-      field: 'phone',
-      headerName: 'Phone Number',
-      flex: 1,
+      field: 'DataPedido',
+      headerName: 'Data Pedido',
     },
     {
-      field: 'email',
-      headerName: 'Email',
-      flex: 1,
+      field: 'CodCliFor',
+      headerName: 'Cod. Cliente',
     },
     {
-      field: 'address',
-      headerName: 'Address',
-      flex: 1,
+      field: 'CnpjCpfCliFor',
+      headerName: 'CPF/CNPJ',
     },
     {
-      field: 'city',
-      headerName: 'City',
-      flex: 1,
+      field: 'TotalPedido',
+      headerName: 'Vr. Total',
     },
     {
-      field: 'zipCode',
-      headerName: 'ZipCode',
-      flex: 1,
+      field: 'Observacoes',
+      headerName: 'Obs',
+    },
+    {
+      field: 'SituacaoPedido',
+      headerName: 'Situacao',
+    },
+    {
+      field: 'NOMECLIFOR',
+      headerName: 'Fantasia',
+    },
+    {
+      field: 'NOMEVENDEDOR',
+      headerName: 'Vendedor',
+    },
+    {
+      field: 'CONDPAG',
+      headerName: 'Cond. Pagamento',
+    },
+    {
+      field: 'TipoMovGerado',
+      headerName: 'Tipo Mov. Gerado',
+    },
+    {
+      field: 'SituacaoMov',
+      headerName: 'Situacao Mov.',
+    },
+    {
+      field: 'CodRetorno',
+      headerName: 'Cod. Retorno',
+    },
+    {
+      field: 'DscRetorno',
+      headerName: 'Dsc. Retorno',
+    },
+    {
+      field: 'NumNF',
+      headerName: 'Num NF',
+    },
+    {
+      field: 'NumPedidoCRONOS',
+      headerName: 'Num. Pedido Cronos',
+    },
+    {
+      field: 'ArqRetPed',
+      headerName: 'Arq. Ret Ped',
+    },
+    {
+      field: 'ArqRet2Ped',
+      headerName: 'Arq. Ret NF',
     },
   ];
 
   return (
-    <Box m="20px">
-      <Box
-        m="40px 0 0 0"
-        height="75vh"
-        sx={{
-          '& .MuiDataGrid-root': {
-            border: 'none',
-          },
-          '& .MuiDataGrid-cell': {
-            borderBottom: 'none',
-          },
-          '& .name-column--cell': {
-            color: colors.greenAccent[300],
-          },
-          '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: colors.blueAccent[700],
-            borderBottom: 'none',
-          },
-          '& .MuiDataGrid-virtualScroller': {
-            backgroundColor: colors.primary[400],
-          },
-          '& .MuiDataGrid-footerContainer': {
-            borderTop: 'none',
-            backgroundColor: colors.blueAccent[700],
-          },
-          '& .MuiDataGrid-toolbarContainer .MuiButton-text': {
-            color: `${colors.grey[100]} !important`,
-          },
+    <Box
+      height="75vh"
+      sx={{
+        '& .MuiDataGrid-root': {
+          border: 'none',
+        },
+        '& .MuiDataGrid-cell': {
+          borderBottom: 'none',
+        },
+        '& .name-column--cell': {
+          color: colors.greenAccent[300],
+        },
+        '& .MuiDataGrid-columnHeaders': {
+          backgroundColor: colors.blueAccent[700],
+          borderBottom: 'none',
+        },
+        '& .MuiDataGrid-virtualScroller': {
+          backgroundColor: colors.primary[400],
+        },
+        '& .MuiDataGrid-footerContainer': {
+          borderTop: 'none',
+
+          backgroundColor: colors.blueAccent[700],
+        },
+        '& .MuiDataGrid-toolbarContainer .MuiButton-text': {
+          color: `${colors.grey[100]} !important`,
+        },
+      }}
+    >
+      <DataGrid
+        getRowId={(row) => row.IdPedidoPalm}
+        rows={pedidos}
+        columns={columns}
+        disableRowSelectionOnClick
+        onRowDoubleClick={(e) => {
+          console.log(e.row);
         }}
-      >
-        <DataGrid
-          rows={pedidos}
-          columns={columns}
-          components={{ Toolbar: GridToolbar }}
-        />
-      </Box>
+        components={{ Toolbar: GridToolbar }}
+      />
     </Box>
   );
 }

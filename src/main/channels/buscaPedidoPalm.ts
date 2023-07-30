@@ -15,7 +15,7 @@ WHERE PedidoPalm.CodFilial = Filiais.CodFilial  AND PedidoPalm.CodFilial = @codf
 
 
 AND (Pedidopalm.DataPedido >= @dataini )
-AND (Pedidopalm.DataPedido < @datafim )
+AND (Pedidopalm.DataPedido <= @datafim )
 AND (Pedidopalm.Origem = @origem)
 
 
