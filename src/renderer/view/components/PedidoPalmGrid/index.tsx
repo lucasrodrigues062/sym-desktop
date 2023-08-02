@@ -8,9 +8,13 @@ import ItemPedidoModal from './ItemPedidoPalmModal';
 
 interface PedidoPalmTableProps {
   pedidos: PedidoPalm[];
+  setPedido: (arg: PedidoPalm) => void;
 }
 
-export default function PedidoPalmTable({ pedidos }: PedidoPalmTableProps) {
+export default function PedidoPalmTable({
+  pedidos,
+  setPedido,
+}: PedidoPalmTableProps) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [open, setOpen] = useState(false);
@@ -149,9 +153,11 @@ export default function PedidoPalmTable({ pedidos }: PedidoPalmTableProps) {
         getRowId={(row) => row.IdPedidoPalm}
         rows={pedidos}
         columns={columns}
-        disableRowSelectionOnClick
-        onRowDoubleClick={(e) => {
+        onRowClick={(e) => {
+          setPedido(e.row);
           setSelectedPedido(e.row);
+        }}
+        onRowDoubleClick={(e) => {
           setOpen(true);
         }}
         components={{ Toolbar: GridToolbar }}

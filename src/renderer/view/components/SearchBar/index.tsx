@@ -3,7 +3,16 @@ import CachedOutlinedIcon from '@mui/icons-material/CachedOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import DriveFileMoveOutlinedIcon from '@mui/icons-material/DriveFileMoveOutlined';
-import { Box, FormControl, IconButton, MenuItem, Select } from '@mui/material';
+import {
+  Alert,
+  Box,
+  FormControl,
+  IconButton,
+  MenuItem,
+  Select,
+  Snackbar,
+  Tooltip,
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -11,6 +20,10 @@ import 'dayjs/locale/pt-br';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { PedidoPalm } from 'main/channels/buscaPedidoPalm';
+import Cookies from 'js-cookie';
+import { ILoginProps } from 'renderer/view/pages/login-page';
+import axios from 'axios';
+import DriveFolderUploadOutlinedIcon from '@mui/icons-material/DriveFolderUploadOutlined';
 
 interface IFilialProps {
   filial: string;
@@ -19,9 +32,16 @@ interface IFilialProps {
 
 interface SearchBarProps {
   setPedidos: (arg: PedidoPalm[]) => void;
+  pedido: PedidoPalm | null;
 }
 
-export default function SearchBar({ setPedidos }: SearchBarProps) {
+interface IToast {
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error' | 'info' | 'warning';
+}
+
+export default function SearchBar({ setPedidos, pedido }: SearchBarProps) {
   const initialDay = dayjs().startOf('month').format('YYYY-MM-DD');
   const endDay = dayjs().endOf('month').format('YYYY-MM-DD');
   const [filiais, setFiliais] = useState<IFilialProps[]>([]);
@@ -31,6 +51,11 @@ export default function SearchBar({ setPedidos }: SearchBarProps) {
   const [dataInicial, setDataInicial] = useState<string>(initialDay);
   const [dataFinal, setDataFinal] = useState<string>(endDay);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [toast, setToast] = useState<IToast>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage('buscaFilial');
@@ -50,6 +75,144 @@ export default function SearchBar({ setPedidos }: SearchBarProps) {
     setIsLoading(false);
   });
 
+  const handleGerarPreVenda = async () => {
+    const cookies = Cookies.get('user');
+    if (cookies) {
+      const user = JSON.parse(cookies) as ILoginProps;
+      if (pedido) {
+        setIsLoading(true);
+        const response = await axios.post(
+          `http://${user.server}:6500/api/v1/closeup/prevenda/${pedido.IdPedidoPalm}`
+        );
+
+        setIsLoading(false);
+        if (response.status === 200) {
+          setToast({
+            open: true,
+            message: 'Pre-venda gerado com sucesso',
+            severity: 'success',
+          });
+        } else {
+          setToast({
+            open: true,
+            message: 'Erro ao gerar pre-venda',
+            severity: 'error',
+          });
+        }
+      } else {
+        setToast({
+          open: true,
+          message: 'Pedido não encontrado',
+          severity: 'info',
+        });
+      }
+    }
+  };
+
+  const handleProcessarStatus = async () => {
+    const cookies = Cookies.get('user');
+    if (cookies) {
+      const user = JSON.parse(cookies) as ILoginProps;
+      if (pedido) {
+        setIsLoading(true);
+        const response = await axios.post(
+          `http://${user.server}:6500/api/v1/closeup/processar/pedido/${pedido.IdPedidoPalm}`
+        );
+
+        setIsLoading(false);
+        if (response.status === 200) {
+          setToast({
+            open: true,
+            message: 'Pre-venda gerado com sucesso',
+            severity: 'success',
+          });
+        } else {
+          setToast({
+            open: true,
+            message: 'Erro ao gerar pre-venda',
+            severity: 'error',
+          });
+        }
+      } else {
+        setToast({
+          open: true,
+          message: 'Pedido não encontrado',
+          severity: 'info',
+        });
+      }
+    }
+  };
+
+  const handleGerarRetornoPedido = async () => {
+    const cookies = Cookies.get('user');
+    if (cookies) {
+      const user = JSON.parse(cookies) as ILoginProps;
+      if (pedido) {
+        setIsLoading(true);
+
+        const response = await axios.post(
+          `http://${user.server}:6500/api/v1/closeup/gerar/pedido/${pedido.IdPedidoPalm}`
+        );
+
+        setIsLoading(false);
+        if (response.status === 200) {
+          setToast({
+            open: true,
+            message: 'Retorno pedido gerado com sucesso',
+            severity: 'success',
+          });
+        } else {
+          setToast({
+            open: true,
+            message: 'Erro ao gerar retorno pedido',
+            severity: 'error',
+          });
+        }
+      } else {
+        setToast({
+          open: true,
+          message: 'Pedido não encontrado',
+          severity: 'info',
+        });
+      }
+    }
+  };
+
+  const handleGerarRetornoNF = async () => {
+    const cookies = Cookies.get('user');
+    if (cookies) {
+      const user = JSON.parse(cookies) as ILoginProps;
+      if (pedido) {
+        setIsLoading(true);
+
+        const response = await axios.post(
+          `http://${user.server}:6500/api/v1/closeup/gerar/nf/${pedido.IdPedidoPalm}`
+        );
+
+        setIsLoading(false);
+        if (response.status === 200) {
+          setToast({
+            open: true,
+            message: 'Retorno NF gerado com sucesso',
+            severity: 'success',
+          });
+        } else {
+          setToast({
+            open: true,
+            message: 'Erro ao gerar Retorno NF',
+            severity: 'error',
+          });
+        }
+      } else {
+        setToast({
+          open: true,
+          message: 'Pedido não encontrado',
+          severity: 'info',
+        });
+      }
+    }
+  };
+
   const handleSearch = () => {
     setIsLoading(true);
     window.electron.ipcRenderer.sendMessage('buscaPedidoPalm', {
@@ -62,6 +225,19 @@ export default function SearchBar({ setPedidos }: SearchBarProps) {
 
   return (
     <Box display="flex" justifyContent="space-between">
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          severity={toast.severity}
+          sx={{ width: '100%' }}
+          onClose={() => setToast({ ...toast, open: false })}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
       <Box width={8000} display="flex">
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
           <Box
@@ -127,23 +303,56 @@ export default function SearchBar({ setPedidos }: SearchBarProps) {
       </Box>
 
       <Box display="flex" pt={1.75} pl={1.75}>
-        <IconButton
-          size="large"
-          color="inherit"
-          onClick={handleSearch}
-          disabled={isLoading}
-        >
-          <SearchOutlinedIcon />
-        </IconButton>
-        <IconButton size="large" color="inherit">
-          <CheckCircleOutlinedIcon />
-        </IconButton>
-        <IconButton size="large" color="inherit">
-          <CachedOutlinedIcon />
-        </IconButton>
-        <IconButton size="large" color="inherit">
-          <DriveFileMoveOutlinedIcon />
-        </IconButton>
+        <Tooltip title="Buscar">
+          <IconButton
+            size="large"
+            color="inherit"
+            onClick={handleSearch}
+            disabled={isLoading}
+          >
+            <SearchOutlinedIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Gerar Pré-Venda">
+          <IconButton
+            size="large"
+            color="inherit"
+            onClick={handleGerarPreVenda}
+            disabled={isLoading}
+          >
+            <CheckCircleOutlinedIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Status Retorno">
+          <IconButton
+            size="large"
+            color="inherit"
+            onClick={handleProcessarStatus}
+            disabled={isLoading}
+          >
+            <CachedOutlinedIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Gerar Retorno Pedido">
+          <IconButton
+            size="large"
+            color="inherit"
+            disabled={isLoading}
+            onClick={handleGerarRetornoPedido}
+          >
+            <DriveFileMoveOutlinedIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Gerar Retorno NF">
+          <IconButton
+            size="large"
+            color="inherit"
+            disabled={isLoading}
+            onClick={handleGerarRetornoNF}
+          >
+            <DriveFolderUploadOutlinedIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
     </Box>
   );
